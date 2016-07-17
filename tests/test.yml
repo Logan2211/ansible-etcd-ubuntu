@@ -18,6 +18,8 @@
   connection: local
   roles:
     - role: "{{ rolename | basename }}"
+  vars:
+    etcd_cluster_group: all
   post_tasks:
     - name: Check etcd is running
       command: pgrep -a etcd

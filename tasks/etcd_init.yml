@@ -13,16 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Update CA Cert index
-  shell: /usr/sbin/update-ca-certificates
+- include: etcd_init_upstart.yml
+  when: pid1_name == "init"
+  tags:
+    - upstart-init
+    - etcd-init
 
-- name: Reload init scripts
-  command: initctl reload-configuration
+- include: etcd_init_systemd.yml
+  when: pid1_name == "systemd"
+  tags:
+    - systemd-init
+    - etcd-init
 
-- name: Reload systemd daemon
-  command: systemctl daemon-reload
-
-- name: Restart etcd
+- name: Start etcd and add to boot services
   service:
-    name: "etcd"
-    state: restarted
+   name: "etcd"
+   enabled: "yes"
+  tags:
+    - etcd-init

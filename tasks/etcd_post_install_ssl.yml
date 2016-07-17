@@ -13,11 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Ensure etcd configuration directory exists
-  file: path="{{ etcd_conf_dir }}" state=directory
-  tags:
-    - etcd-config
-
 - name: Deploy SSL certificate and key
   copy:
     src: "{{ item.src }}"

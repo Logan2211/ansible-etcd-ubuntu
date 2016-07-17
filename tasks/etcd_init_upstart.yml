@@ -13,16 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Update CA Cert index
-  shell: /usr/sbin/update-ca-certificates
-
-- name: Reload init scripts
-  command: initctl reload-configuration
-
-- name: Reload systemd daemon
-  command: systemctl daemon-reload
-
-- name: Restart etcd
-  service:
-    name: "etcd"
-    state: restarted
+- name: Drop etcd upstart configurations
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  notify:
+    - Reload init scripts
+    - Restart etcd
+  with_items:
+    - { src: "upstart-etcd.conf.j2", dest: "/etc/init/etcd.conf" }
+    - { src: "upstart-etcd.override.j2", dest: "/etc/init/etcd.override" }
+  tags:
+    - etcd-config
+    - upstart-init
+    - etcd-init
