@@ -1,0 +1,49 @@
+---
+# Copyright 2017, SUSE LINUX GmbH.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- name: Add etcd zypper repository
+  # zypper_repository/auto_import_keys added in 2.2 so we need to
+  # manually refresh the repository and import the keys in order to
+  # work with older ansible versions.
+  zypper_repository:
+      refresh: yes
+      name: "{{ item.name }}"
+      repo: "{{ item.uri }}"
+  register: zypper_repository_added
+  with_items: "{{ etcd_zypper_repo }}"
+  tags:
+    - etcd-zypper-repositories
+
+- name: Refresh etcd zypper repository
+  command: zypper --gpg-auto-import-keys ref
+  when: zypper_repository_added.changed
+  # We need to run this right after we add the repos and before
+  # we install any packages so it can't be a handler unless we move
+  # everything to pre_tasks
+  tags:
+    - skip_ansible_lint
+    - etcd-zypper-repositories
+
+- name: Install etcd zypper packages
+  zypper:
+    name: "{{ item }}"
+    state: "{{ etcd_package_state }}"
+  register: install_packages
+  until: install_packages|success
+  retries: 5
+  delay: 2
+  with_items: "{{ etcd_packages }}"
+  tags:
+    - etcd-zypper-packages
