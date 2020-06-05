@@ -27,7 +27,7 @@
       changed_when: false
     - name: Test etcd cluster health
       uri:
-        url: "{{ etcd_url_scheme }}://127.0.0.1:{{ etcd_client_port }}/health"
+        url: "http://127.0.0.1:2379/health"
         return_content: true
       register: etcd_health
       changed_when: false
