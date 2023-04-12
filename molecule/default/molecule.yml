@@ -47,5 +47,8 @@ provisioner:
     prepare: prepare.yml
     converge: playbook.yml
     verify: verify.yml
+  config_options:
+    defaults:
+      inject_facts_as_vars: false
 scenario:
   name: default
